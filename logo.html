@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Logo-Logo Game</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#0f1724; --muted:#94a3b8; --accent:#06b6d4; --glass:rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,system-ui,Arial;background:
+      linear-gradient(180deg,#030610 0%, #061028 100%);color:#e6eef6}
+    header{padding:20px 24px;display:flex;align-items:center;gap:16px}
+    header h1{margin:0;font-size:20px}
+    header p{margin:0;color:var(--muted);font-size:13px}
+    .wrap{max-width:1100px;margin:18px auto;padding:16px}
+    .controls{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+    .search{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);
+      background:transparent;color:inherit}
+    .btn{background:var(--accent);color:#022;padding:10px 12px;border-radius:8px;border:0;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+    .card{background:linear-gradient(180deg,var(--card),#081022);border-radius:10px;padding:8px;
+      display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:1px solid var(--glass);
+      transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    .card img{width:100%;height:110px;object-fit:cover;border-radius:8px;display:block}
+    .card figcaption{font-size:13px;color:var(--muted);text-align:center;word-break:break-word}
+    footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center}
+    /* Lightbox */
+    #lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:60;padding:20px}
+    #lightbox .panel{background:#061226;border-radius:12px;max-width:980px;width:100%;max-height:90vh;overflow:auto;padding:14px;box-shadow:0 20px 60px rgba(2,6,23,0.7)}
+    #lightbox img{width:100%;height:auto;display:block;border-radius:8px}
+    .lb-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
+    .lb-title{font-weight:700}
+    .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
+    @media (max-width:720px){ .lb-row{flex-direction:column;align-items:stretch} }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Logo-Logo Game</h1>
+      <p>Klik gambar untuk memperbesar dan download</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="controls">
+      <input id="q" class="search" placeholder="Cari nama game..." />
+      <button id="clearBtn" class="icon-btn" title="Reset pencarian">Reset</button>
+    </div>
+
+    <section id="gallery" class="grid" aria-live="polite">
+      <figure class="card"><img src="gta.png" loading="lazy" alt="gta.png"><figcaption>gta</figcaption></figure>
+      <figure class="card"><img src="minecraft.jpg" loading="lazy" alt="minecraft.jpg"><figcaption>minecraft</figcaption></figure>
+      <figure class="card"><img src="Fc.jpg" loading="lazy" alt="Fc.jpg"><figcaption>Fc</figcaption></figure>
+      <figure class="card"><img src="ml.jpg" loading="lazy" alt="ml.jpg"><figcaption>ml</figcaption></figure>
+      <figure class="card"><img src="pou.jpg" loading="lazy" alt="pou.jpg"><figcaption>pou</figcaption></figure>
+      <figure class="card"><img src="pvp.jpg" loading="lazy" alt="pvp.jpg"><figcaption>pvp</figcaption></figure>
+      <figure class="card"><img src="rob.jpg" loading="lazy" alt="rob.jpg"><figcaption>rob</figcaption></figure>
+      <figure class="card"><img src="sg.jpg" loading="lazy" alt="sg.jpg"><figcaption>sg</figcaption></figure>
+      <figure class="card"><img src="ff.jpg" loading="lazy" alt="ff.jpg"><figcaption>ff</figcaption></figure>
+      <figure class="card"><img src="block.jpg" loading="lazy" alt="block.jpg"><figcaption>block</figcaption></figure>
+    </section>
+
+    <footer>&copy; copyright 2025 Logo Game • Dibuat oleh Athala</footer>
+  </main>
+
+  <!-- Lightbox / Preview -->
+  <div id="lightbox" role="dialog" aria-modal="true">
+    <div class="panel" role="document">
+      <img id="lbImg" src="" alt="">
+      <div class="lb-row">
+        <div>
+          <div class="lb-title" id="lbTitle"></div>
+          <div style="color:var(--muted);font-size:13px" id="lbFile"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="downloadBtn" class="btn">Download</button>
+          <button id="closeBtn" class="icon-btn">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility: derive readable title from filename
+    function niceName(src){
+      const name = src.split('/').pop().replace(/\.[^/.]+$/, '');
+      return name.replace(/[-_]/g, ' ');
+    }
+
+    const gallery = document.getElementById('gallery');
+    const q = document.getElementById('q');
+    const clearBtn = document.getElementById('clearBtn');
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbTitle = document.getElementById('lbTitle');
+    const lbFile = document.getElementById('lbFile');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const closeBtn = document.getElementById('closeBtn');
+
+    // Open preview when clicking a card
+    gallery.addEventListener('click', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const img = card.querySelector('img');
+      if (!img) return;
+      openLightbox(img.src, img.alt);
+    });
+
+    function openLightbox(src, alt){
+      lbImg.src = src;
+      lbImg.alt = alt || '';
+      lbTitle.textContent = niceName(src);
+      lbFile.textContent = src.split('/').pop();
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(){
+      lightbox.style.display = 'none';
+      lbImg.src = '';
+      document.body.style.overflow = '';
+    }
+
+    closeBtn.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+
+    // Download: try fetch+blob (works when served), fallback to direct link
+    downloadBtn.addEventListener('click', async () => {
+      const src = lbImg.src;
+      const filename = src.split('/').pop() || 'image.png';
+      try{
+        const res = await fetch(src);
+        if (!res.ok) throw new Error('fetch failed');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+        a.remove(); URL.revokeObjectURL(url);
+      }catch(err){
+        // fallback
+        const a = document.createElement('a');
+        a.href = src; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      }
+    });
+
+    // Simple search/filter
+    q.addEventListener('input', () => {
+      const term = q.value.trim().toLowerCase();
+      Array.from(gallery.children).forEach(fig => {
+        const text = (fig.querySelector('figcaption')?.textContent || '').toLowerCase();
+        fig.style.display = text.includes(term) ? '' : 'none';
+      });
+    });
+    clearBtn.addEventListener('click', () => { q.value=''; q.dispatchEvent(new Event('input')); });
+
+    // Optional: improve captions from filenames on load
+    Array.from(gallery.querySelectorAll('figure')).forEach(fig => {
+      const img = fig.querySelector('img');
+      const cap = fig.querySelector('figcaption');
+      if (img && cap && (!cap.textContent || cap.textContent.trim()=== '')) cap.textContent = niceName(img.src);
+      // normalize caption text
+      cap.textContent = cap.textContent.trim();
+    });
+  </script>
+</body>
+</html>
