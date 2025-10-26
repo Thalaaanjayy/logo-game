@@ -1,3 +1,4 @@
+// ...existing code...
 <!doctype html>
 <html lang="id">
 <head>
@@ -33,6 +34,8 @@
     #lightbox img{width:100%;height:auto;display:block;border-radius:8px}
     .lb-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px}
     .lb-title{font-weight:700}
+    .lb-desc{color:var(--muted);margin-top:8px;font-size:14px;line-height:1.4}
+    .lb-year{color:var(--muted);font-size:13px;margin-top:6px}
     .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
     @media (max-width:720px){ .lb-row{flex-direction:column;align-items:stretch} }
   </style>
@@ -75,6 +78,8 @@
         <div>
           <div class="lb-title" id="lbTitle"></div>
           <div style="color:var(--muted);font-size:13px" id="lbFile"></div>
+          <div class="lb-desc" id="lbDesc"></div>
+          <div class="lb-year" id="lbYear"></div>
         </div>
         <div style="display:flex;gap:8px">
           <button id="downloadBtn" class="btn">Download</button>
@@ -98,8 +103,54 @@
     const lbImg = document.getElementById('lbImg');
     const lbTitle = document.getElementById('lbTitle');
     const lbFile = document.getElementById('lbFile');
+    const lbDesc = document.getElementById('lbDesc');
+    const lbYear = document.getElementById('lbYear');
     const downloadBtn = document.getElementById('downloadBtn');
     const closeBtn = document.getElementById('closeBtn');
+
+    // Metadata: tambahkan/ubah deskripsi dan tahun rilis sesuai kebutuhan
+    const metadata = {
+      'gta.png': {
+        year:2004,
+        desc: 'GTA: San Andreas (dirilis 2004) adalah game aksi-petualangan dunia terbuka buatan Rockstar North. Pemain mengendalikan Carl "CJ" Johnson yang kembali ke kampung halamannya untuk menyelidiki kematian ibunya, membangun kembali geng, dan berpetualang di tiga kota fiksi dalam negara bagian San Andreas. Game ini terkenal karena kebebasan eksplorasi, cerita panjang, kustomisasi karakter, misi beragam, dan elemen RPG ringan.'
+      },
+      'minecraft.jpg': {
+        year: 2011,
+        desc: 'Minecraft — sandbox kreatif buatan Mojang. Mulai dikenal sejak versi alfa (Mei 2009) dan rilis resmi pada November 2011. Pemain dapat menambang, meramu, membangun, dan bertahan hidup di dunia berbasis blok, dengan mode Kreatif, Survival, dan Multiplayer. Terkenal karena kebebasan eksplorasi, kemampuan kustomisasi, dan komunitas mod yang besar.'
+      },
+      'Fc.jpg': {
+        year: null,
+        desc: 'FC Mobile adalah permainan video simulasi sepak bola yang dikembangkan oleh EA Sports untuk perangkat seluler (iOS dan Android). Permainan ini sebelumnya dikenal sebagai FIFA Mobile dan diluncurkan sebagai penggantinya pada 26 September 2023. FC Mobile menawarkan grafis realistis, mode permainan yang beragam, dan memungkinkan pemain membangun tim impian mereka.'
+      },
+      'ml.jpg': {
+        year: 2016,
+        desc: 'Mobile Legends adalah game mobile bergenre Multiplayer Online Battle Arena (MOBA) yang dikembangkan oleh Moonton dan dirilis pada tahun 2016. Permainan ini mempertemukan dua tim yang masing-masing terdiri dari lima pemain, di mana setiap pemain mengendalikan satu "Hero" dengan kemampuan unik untuk bertarung, menghancurkan markas lawan, dan bertahan dari serangan musuh.'
+      },
+      'pou.jpg': {
+        year: 2012,
+        desc: 'Pou ( / p uː / atau / p oʊ / ) adalah permainan hewan peliharaan virtual seluler tahun 2012 untuk BlackBerry 10 , iOS , dan Android yang dikembangkan oleh desainer Lebanon Paul Salameh dan diterbitkan dengan nama Zakeh Limited di Google Play Store dan Apple App Store .'
+      },
+      'pvp.jpg': {
+        year: null,
+        desc: 'Plants vs. Zombies adalah permainan menara bertahan yang dibuat dan diluncurkan oleh PopCap Games untuk Microsoft Windows dan Mac OS X serta oleh induk perusahaannya, Electronic Arts untuk Android. Dalam permainan ini, ada zombi yang menyerang rumah dan pemain harus menggunakan tanaman untuk menghadapi mereka'
+      },
+      'rob.jpg': {
+        year: 2006,
+        desc: 'Robbery Bob: Man of Steal (plesetan dari man of steel , julukan yang diasosiasikan dengan Superman , dan juga dikenal dengan subjudul King of Sneak [ 2 ] [ 3 ] ) adalah permainan aksi siluman tahun 2012 yang dikembangkan oleh studio Swedia [ 4 ] Level Eight dan awalnya diterbitkan oleh Chillingo . Dalam permainan ini, pemain mengendalikan seorang perampok bernama Bob dan harus menyelinap di sekitar rumah untuk menyelesaikan misi'
+      },
+      'sg.jpg': {
+        year: null,
+        desc: 'Stumble Guys merupakan game dengan konsep multiplayer bergenre battle royale. Sama seperti Fall Guys, di sini kamu bertanding dengan player lain untuk melewati sejumlah rintangan. Player yang bisa bertahan hingga rintangan terakhir, akan keluar menjadi juaranya'
+      },
+      'ff.jpg': {
+        year: 2017,
+        desc: 'Garena Free Fire atau biasa disebut Free Fire (sering disingkat FF) adalah permainan battle royale yang dikembangkan oleh 111 Dots Studio[1] dan diterbitkan oleh Garena untuk Android dan iOS.[2] Permainan ini merupakan permainan piranti genggam yang paling banyak diunduh secara global pada tahun 2019.'
+      },
+      'block.jpg': {
+        year: null,
+        desc: 'Block Blast adalah game teka-teki yang terasa seperti perpaduan antara Tetris dan game penempatan balok tradisional. Konsepnya sederhana: Anda mendapatkan balok-balok dengan berbagai bentuk dan menyusunnya ke dalam kotak untuk membersihkan baris dan kolom'
+      }
+    };
 
     // Open preview when clicking a card
     gallery.addEventListener('click', (e) => {
@@ -113,8 +164,19 @@
     function openLightbox(src, alt){
       lbImg.src = src;
       lbImg.alt = alt || '';
+      const file = src.split('/').pop();
       lbTitle.textContent = niceName(src);
-      lbFile.textContent = src.split('/').pop();
+      lbFile.textContent = file;
+
+      const meta = metadata[file];
+      if (meta) {
+        lbDesc.textContent = meta.desc || '';
+        lbYear.textContent = meta.year ? ('Rilis: ' + meta.year) : '';
+      } else {
+        lbDesc.textContent = 'Deskripsi belum tersedia. Silakan tambahkan di objek metadata pada script.';
+        lbYear.textContent = '';
+      }
+
       lightbox.style.display = 'flex';
       document.body.style.overflow = 'hidden';
     }
@@ -169,3 +231,4 @@
   </script>
 </body>
 </html>
+// ...existing code...
